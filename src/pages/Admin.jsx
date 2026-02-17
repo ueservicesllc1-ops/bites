@@ -2,16 +2,33 @@ import { useState, useEffect } from 'react';
 import { db, storage } from '../firebase/config';
 import { collection, addDoc, getDocs, doc, setDoc, getDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Package, MessageSquare, Settings, Image as ImageIcon, Trash2, Save } from 'lucide-react';
+import { Package, MessageSquare, Settings, Image as ImageIcon, Trash2, Save, ShoppingBag } from 'lucide-react';
 
 /* --- SUBCOMPONENTS --- */
 
+// 1. PRODUCTS MANAGER (Existing logic + List)
 // 1. PRODUCTS MANAGER (Existing logic + List)
 const ProductManager = () => {
     const [product, setProduct] = useState({ name: '', price: '', category: 'Ropa', description: '' });
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+    const [productsList, setProductsList] = useState([]);
+    const [uploadingGallery, setUploadingGallery] = useState({}); // Track uploading state per product ID
+
+    useEffect(() => {
+        loadProducts();
+    }, []);
+
+    const loadProducts = async () => {
+        try {
+            const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
+            setProductsList(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        } catch (error) {
+            console.error("Error loading products:", error);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -35,17 +52,22 @@ const ProductManager = () => {
                 imageUrl = await getDownloadURL(snapshot.ref);
             }
 
+            // Create product document with initial empty gallery (cover is separate)
+            const gallery = [];
+
             await addDoc(collection(db, "products"), {
                 ...product,
-                price: parseFloat(product.price),
-                imageUrl,
+                price: parseFloat(product.price) || 0,
+                imageUrl, // Cover image Only
+                gallery,  // Empty initially, filled via "Agregar Fotos"
                 createdAt: new Date()
             });
 
-            setMessage('Producto agregado exitosamente!');
+            setMessage('Categoría creada exitosamente!');
             setProduct({ name: '', price: '', category: 'Ropa', description: '' });
             setImage(null);
             document.getElementById('fileInput').value = "";
+            loadProducts();
         } catch (error) {
             console.error("Error adding document: ", error);
             setMessage('Error: ' + error.message);
@@ -54,42 +76,257 @@ const ProductManager = () => {
         }
     };
 
+    const handleGalleryUpload = async (productId, files) => {
+        if (!files || files.length === 0) return;
+
+        setUploadingGallery(prev => ({ ...prev, [productId]: true }));
+
+        try {
+            const uploadPromises = Array.from(files).map(async (file) => {
+                const imageRef = ref(storage, `gallery/${productId}/${Date.now()}_${file.name}`);
+                const snapshot = await uploadBytes(imageRef, file);
+                return await getDownloadURL(snapshot.ref);
+            });
+
+            const newUrls = await Promise.all(uploadPromises);
+
+            const productRef = doc(db, "products", productId);
+            const productSnap = await getDoc(productRef);
+
+            if (productSnap.exists()) {
+                const currentGallery = productSnap.data().gallery || [];
+                const updatedGallery = [...currentGallery, ...newUrls];
+
+                await setDoc(productRef, { gallery: updatedGallery }, { merge: true });
+                alert(`${newUrls.length} fotos agregadas.`);
+                loadProducts();
+            }
+
+        } catch (error) {
+            console.error("Error uploading gallery images:", error);
+            alert("Error subiendo imágenes");
+        } finally {
+            setUploadingGallery(prev => ({ ...prev, [productId]: false }));
+        }
+    };
+
+    const removeImageFromGallery = async (productId, imageUrlToRemove) => {
+        if (!window.confirm("¿Eliminar esta foto de la galería?")) return;
+
+        try {
+            const productRef = doc(db, "products", productId);
+            const productSnap = await getDoc(productRef);
+
+            if (productSnap.exists()) {
+                const currentGallery = productSnap.data().gallery || [];
+                const updatedGallery = currentGallery.filter(url => url !== imageUrlToRemove);
+
+                // If we removed the main imageUrl (cover), maybe update it too? 
+                // For simplicity, let's keep imageUrl separate or update it if it was the first one.
+                // Here we just update the array.
+                await setDoc(productRef, { gallery: updatedGallery }, { merge: true });
+                loadProducts();
+            }
+        } catch (error) {
+            console.error("Error removing image:", error);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("¿Borrar esta categoría completa y todas sus fotos?")) return;
+        try {
+            await deleteDoc(doc(db, "products", id));
+            loadProducts();
+        } catch (error) {
+            console.error("Error deleting:", error);
+        }
+    };
+
     return (
         <div className="admin-section">
-            <h3>Gestionar Productos</h3>
+            <h3>Crear Nueva Categoría</h3>
             {message && <p className={`message ${message.includes('Error') ? 'error' : 'success'}`}>{message}</p>}
 
             <form onSubmit={handleSubmit} className="admin-form">
                 <div className="form-group">
-                    <label>Nombre del Producto</label>
-                    <input type="text" name="name" value={product.name} onChange={handleInputChange} required />
+                    <label>Nombre de la Categoría</label>
+                    <input type="text" name="name" value={product.name} onChange={handleInputChange} required placeholder="Ej. Camisetas" />
                 </div>
-                <div className="form-row">
-                    <div className="form-group">
-                        <label>Precio</label>
-                        <input type="number" name="price" value={product.price} onChange={handleInputChange} required step="0.01" />
-                    </div>
-                    <div className="form-group">
-                        <label>Categoría</label>
-                        <select name="category" value={product.category} onChange={handleInputChange}>
-                            <option value="Ropa">Ropa</option>
-                            <option value="Grabado">Grabado</option>
-                            <option value="Promocional">Promocional</option>
-                        </select>
-                    </div>
-                </div>
+
                 <div className="form-group">
-                    <label>Descripción</label>
+                    <label>Descripción Corta</label>
                     <textarea name="description" value={product.description} onChange={handleInputChange} />
                 </div>
+
                 <div className="form-group">
-                    <label>Imagen</label>
+                    <label>Imagen de Portada</label>
                     <input type="file" id="fileInput" onChange={handleImageChange} accept="image/*" required />
                 </div>
+
                 <button type="submit" className="btn btn-primary" disabled={loading}>
-                    {loading ? 'Guardando...' : 'Guardar Producto'}
+                    {loading ? 'Creando...' : 'Crear Categoría'}
                 </button>
             </form>
+
+            <hr style={{ margin: '40px 0', border: '0', borderTop: '1px solid #e2e8f0' }} />
+
+            <h4 style={{ marginBottom: '20px', color: 'var(--secondary)' }}>Categorías Existentes ({productsList.length})</h4>
+            <div className="products-list-container">
+                {productsList.map(p => (
+                    <div key={p.id} className="category-admin-card">
+                        <div className="category-header">
+                            <div className="cat-main-info">
+                                <img src={p.imageUrl} alt="Cover" className="cat-cover-img" />
+                                <div>
+                                    <h5>{p.name}</h5>
+                                    <small>{p.gallery ? p.gallery.length : 0} fotos en total</small>
+                                </div>
+                            </div>
+                            <button onClick={() => handleDelete(p.id)} className="btn-delete-cat">
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+
+                        {/* Gallery Preview Grid */}
+                        <div className="cat-gallery-preview">
+                            {p.gallery && p.gallery.map((imgUrl, idx) => (
+                                <div key={idx} className="mini-thumb">
+                                    <img src={imgUrl} alt="thumb" />
+                                    <button
+                                        className="remove-img-btn"
+                                        onClick={() => removeImageFromGallery(p.id, imgUrl)}
+                                        title="Eliminar foto"
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Upload Trigger */}
+                        <div className="gallery-upload-area">
+                            <label className="btn-upload-gallery" htmlFor={`gallery-${p.id}`}>
+                                {uploadingGallery[p.id] ? 'Subiendo...' : '+ Agregar Más Fotos'}
+                            </label>
+                            <input
+                                type="file"
+                                id={`gallery-${p.id}`}
+                                multiple
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleGalleryUpload(p.id, e.target.files)}
+                                disabled={uploadingGallery[p.id]}
+                            />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <style>{`
+                .products-list-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                }
+                .category-admin-card {
+                    background: #fff;
+                    border: 1px solid var(--border);
+                    border-radius: 8px;
+                    padding: 15px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                }
+                .category-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                    border-bottom: 1px solid #f1f5f9;
+                    padding-bottom: 15px;
+                }
+                .cat-main-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                }
+                .cat-cover-img {
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 8px;
+                    object-fit: cover;
+                    background: #f1f5f9;
+                }
+                .cat-main-info h5 {
+                    margin: 0;
+                    font-size: 1.1rem;
+                    color: var(--secondary);
+                }
+                .cat-main-info small { color: var(--muted-text); }
+                
+                .cat-gallery-preview {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    margin-bottom: 15px;
+                }
+                .mini-thumb {
+                    width: 60px;
+                    height: 60px;
+                    position: relative;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    border: 1px solid #eee;
+                }
+                .mini-thumb img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+                .remove-img-btn {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(255,0,0,0.8);
+                    color: white;
+                    border: none;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    font-size: 16px;
+                    line-height: 1;
+                }
+                
+                .btn-delete-cat {
+                    background: #fee2e2;
+                    color: #ef4444;
+                    border: none;
+                    padding: 8px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                .btn-delete-cat:hover { background: #fca5a5; }
+
+                .btn-upload-gallery {
+                    text-align: center;
+                    font-size: 0.9rem;
+                    color: var(--primary);
+                    border: 2px dashed #cbd5e1;
+                    padding: 10px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    display: block;
+                    width: 100%;
+                    background: #f8fafc;
+                    transition: all 0.2s;
+                }
+                .btn-upload-gallery:hover {
+                    background: #f0fdf4;
+                    border-color: var(--primary);
+                }
+            `}</style>
         </div>
     );
 };

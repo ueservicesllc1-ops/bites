@@ -3,35 +3,27 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase/config';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-
-const SAMPLE_SLIDES = [
-  {
-    id: 1,
-    title: "Diseño Publicitario",
-    subtitle: "Destaca tu marca con productos únicos y personalizados.",
-    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    link: "/store"
-  },
-  {
-    id: 2,
-    title: "Estampados Exclusivos",
-    subtitle: "Camisetas y textiles con la mejor calidad del mercado.",
-    image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    link: "/store"
-  },
-  {
-    id: 3,
-    title: "Grabado Láser Preciso",
-    subtitle: "Detalles que marcan la diferencia en metal, madera y más.",
-    image: "https://images.unsplash.com/photo-1622606543924-49c7482f5677?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80",
-    link: "/custom"
-  }
-];
+import { useLanguage } from '../context/LanguageContext';
 
 const Hero = () => {
+  const { t } = useLanguage();
+
+  const SAMPLE_SLIDES = [
+    {
+      id: 1,
+      title: t('hero.title'),
+      subtitle: t('hero.subtitle'),
+      image: "",
+      link: "/#gallery"
+    }
+  ];
+
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState(SAMPLE_SLIDES);
+  const [slides, setSlides] = useState([]); // Start empty
   const [loading, setLoading] = useState(true);
+  // Ideally SAMPLE_SLIDES depends on 't'. 
+
+  // Better approach: combine logic.
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -41,23 +33,25 @@ const Hero = () => {
         const fetchedBanners = querySnapshot.docs.map(doc => ({
           id: doc.id,
           image: doc.data().imageUrl,
-          // If banners in DB don't have titles yet, use details from sample or generic default
-          title: doc.data().title || "Bites Creative Labs",
-          subtitle: doc.data().subtitle || "Diseño y Publicidad a tu medida",
-          link: doc.data().link || "/store"
+          title: doc.data().title || t('hero.title'),
+          subtitle: doc.data().subtitle || t('hero.subtitle'),
+          link: doc.data().link || "/#gallery"
         }));
 
         if (fetchedBanners.length > 0) {
           setSlides(fetchedBanners);
+        } else {
+          setSlides(SAMPLE_SLIDES);
         }
       } catch (error) {
         console.error("Error fetching banners:", error);
+        setSlides(SAMPLE_SLIDES);
       } finally {
         setLoading(false);
       }
     };
     fetchBanners();
-  }, []);
+  }, [t]); // Re-run when language changes to update translations
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -69,21 +63,41 @@ const Hero = () => {
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
+  if (loading) {
+    return (
+      <section className="hero-slider" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#111' }}>
+        <div style={{ width: '40px', height: '40px', border: '3px solid rgba(255,255,255,0.3)', borderTop: '3px solid #fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </section>
+    );
+  }
+
+  if (slides.length === 0) return null;
+
   return (
     <section className="hero-slider">
       {slides.map((slide, index) => (
         <div
           key={slide.id}
           className={`slide ${index === currentSlide ? 'active' : ''}`}
-          style={{ backgroundImage: `url(${slide.image})` }}
+          style={{
+            backgroundImage: slide.image ? `url(${slide.image})` : 'none',
+            backgroundColor: '#1a1a1a'
+          }}
         >
           <div className="overlay"></div>
-          <div className="slide-content container">
+          <div className="slide-content">
             <h1 className="animate-slide-up">{slide.title}</h1>
             <p className="animate-slide-up delay-1">{slide.subtitle}</p>
-            <Link to={slide.link} className="btn btn-primary animate-slide-up delay-2">
-              Ver Productos <ArrowRight size={20} style={{ marginLeft: '10px' }} />
-            </Link>
+            {slide.link.includes('#') ? (
+              <a href={slide.link} className="btn btn-primary animate-slide-up delay-2">
+                {t('hero.cta')} <ArrowRight size={20} style={{ marginLeft: '10px' }} />
+              </a>
+            ) : (
+              <Link to={slide.link} className="btn btn-primary animate-slide-up delay-2">
+                {t('hero.cta')} <ArrowRight size={20} style={{ marginLeft: '10px' }} />
+              </Link>
+            )}
           </div>
         </div>
       ))}
@@ -112,7 +126,7 @@ const Hero = () => {
       <style>{`
         .hero-slider {
           position: relative;
-          height: 500px;
+          height: 650px;
           width: 100%;
           overflow: hidden;
           margin-top: var(--nav-height);
@@ -127,9 +141,11 @@ const Hero = () => {
           opacity: 0;
           transition: opacity 1s ease-in-out;
           background-size: cover;
+          background-repeat: no-repeat;
           background-position: center;
           display: flex;
           align-items: center;
+          justify-content: flex-start; /* Ensure left alignment */
         }
 
         .slide.active {
@@ -142,7 +158,7 @@ const Hero = () => {
           left: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 100%);
+          background: transparent;
           z-index: 1;
         }
 
@@ -150,7 +166,14 @@ const Hero = () => {
           position: relative;
           z-index: 2;
           color: white;
-          max-width: 800px;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          text-align: left;
+          max-width: 600px;
+          padding-left: 5%; /* Push from the very edge */
+          padding-right: 20px;
         }
 
         .slide-content h1 {
