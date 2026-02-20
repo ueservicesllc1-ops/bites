@@ -91,30 +91,46 @@ const Store = () => {
       <style>{`
         .store-page {
           min-height: 80vh;
-          padding-top: calc(var(--nav-height) + 40px);
+          padding-top: calc(var(--nav-height) + 20px);
         }
 
         .store-header {
           text-align: center;
-          margin-bottom: 40px;
+          margin-bottom: 30px;
+          padding: 0 10px;
+        }
+        
+        .store-header h2 {
+          font-size: 2rem;
+          margin-bottom: 10px;
         }
 
         .category-filter {
           display: flex;
-          justify-content: center;
-          gap: 15px;
-          margin-bottom: 50px;
-          flex-wrap: wrap;
+          justify-content: flex-start; /* Left align for scroll */
+          gap: 10px;
+          margin-bottom: 30px;
+          overflow-x: auto; /* Horizontal scroll on mobile */
+          padding-bottom: 10px; /* Space for scrollbar */
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none; /* Hide scrollbar Firefox */
+        }
+        
+        .category-filter::-webkit-scrollbar {
+          display: none; /* Hide scrollbar Chrome/Safari */
         }
 
         .filter-btn {
           background: var(--dark-card);
           color: var(--muted-text);
           border: 1px solid var(--border);
-          padding: 8px 20px;
+          padding: 8px 16px;
           border-radius: 30px;
           font-weight: 600;
+          font-size: 0.9rem;
+          white-space: nowrap; /* Prevent breaking */
           transition: all 0.3s ease;
+          flex-shrink: 0; /* Don't shrink */
         }
 
         .filter-btn:hover, .filter-btn.active {
@@ -126,8 +142,33 @@ const Store = () => {
 
         .product-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 30px;
+          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Smaller min-width for mobile 2-col */
+          gap: 15px;
+        }
+
+        /* Desktop Styles */
+        @media (min-width: 768px) {
+          .store-page { padding-top: calc(var(--nav-height) + 40px); }
+          .store-header { margin-bottom: 40px; }
+          .store-header h2 { font-size: 2.5rem; }
+          
+          .category-filter {
+            justify-content: center; /* Center on desktop */
+            overflow-x: visible;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 50px;
+          }
+          
+          .filter-btn {
+            font-size: 1rem;
+            padding: 8px 24px;
+          }
+          
+          .product-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+          }
         }
       `}</style>
     </div>

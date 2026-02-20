@@ -743,126 +743,126 @@ const Admin = () => {
             </main>
 
             <style>{`
+            /* Mobile First Admin Layout */
             .admin-layout {
                 display: flex;
+                flex-direction: column;
                 min-height: 100vh;
                 padding-top: var(--nav-height);
+                padding-bottom: 70px; /* Space for bottom nav on mobile */
                 background: #f1f5f9;
             }
 
+            /* Sidebar becomes Bottom Nav on Mobile */
             .sidebar {
-                width: 250px;
-                background: white;
-                border-right: 1px solid var(--border);
-                display: flex;
-                flex-direction: column;
                 position: fixed;
                 bottom: 0;
-                top: var(--nav-height);
                 left: 0;
-                z-index: 10;
+                width: 100%;
+                height: 60px;
+                background: white;
+                border-top: 1px solid var(--border);
+                display: flex;
+                flex-direction: row;
+                z-index: 100;
+                overflow-x: auto; /* Scroll if too many items */
             }
 
             .sidebar-header {
-                padding: 20px;
-                border-bottom: 1px solid var(--border);
+                display: none; /* Hide header on mobile */
             }
 
             .sidebar-nav {
-                padding: 20px 0;
+                display: flex;
+                width: 100%;
+                padding: 0;
+                justify-content: space-around;
             }
 
             .sidebar-nav button {
-                width: 100%;
-                display: flex;
+                flex-direction: column;
+                justify-content: center;
                 align-items: center;
-                gap: 12px;
-                padding: 15px 20px;
+                gap: 5px;
+                padding: 8px;
                 border: none;
                 background: transparent;
-                text-align: left;
-                font-size: 1rem;
+                font-size: 0.75rem; /* Smaller text */
                 color: var(--muted-text);
                 cursor: pointer;
                 transition: all 0.2s;
+                white-space: nowrap;
+                flex: 1;
             }
 
             .sidebar-nav button:hover, .sidebar-nav button.active {
-                background: #eff6ff;
+                background: transparent;
                 color: var(--primary);
-                border-right: 3px solid var(--primary);
+                border-right: none;
+                border-top: 3px solid var(--primary); /* Indicator on top for bottom nav */
             }
 
             .main-content {
                 flex: 1;
-                margin-left: 250px;
-                padding: 40px;
+                margin-left: 0;
+                padding: 20px;
+                width: 100%;
             }
 
             .admin-section {
                 background: white;
-                padding: 30px;
+                padding: 20px;
                 border-radius: 12px;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-                max-width: 800px;
+                width: 100%;
                 margin: 0 auto;
             }
 
             .admin-section h3 {
-                margin-bottom: 25px;
+                margin-bottom: 20px;
                 color: var(--secondary);
-                font-size: 1.5rem;
+                font-size: 1.3rem;
                 border-bottom: 2px solid #f1f5f9;
                 padding-bottom: 15px;
             }
 
-            .admin-form .form-group {
-                margin-bottom: 20px;
-            }
+            /* Forms */
+            .admin-form .form-group { margin-bottom: 15px; }
 
             .admin-form label {
                 display: block;
-                margin-bottom: 8px;
+                margin-bottom: 5px;
                 font-weight: 600;
                 color: var(--secondary);
+                font-size: 0.9rem;
             }
 
             .admin-form input, .admin-form select, .admin-form textarea {
                 width: 100%;
-                padding: 12px;
+                padding: 10px;
                 border: 1px solid var(--border);
                 border-radius: 8px;
                 font-family: inherit;
+                font-size: 16px; /* Prevent zoom */
             }
-
+            
             .form-row {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 20px;
-            }
-
-            .message-card {
-                padding: 15px;
-                border: 1px solid var(--border);
-                border-radius: 8px;
-                margin-bottom: 15px;
-                background: #fafafa;
-            }
-
-            .msg-header {
                 display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
+                flex-direction: column;
+                gap: 15px;
             }
 
-            .msg-body { color: var(--secondary); }
-            .msg-date { color: var(--muted-text); display: block; margin-top: 10px; }
-
+            /* Grids */
+            .products-list-container, .banners-grid, .messages-list {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
             .banners-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 15px;
-                margin-top: 20px;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
             }
 
             .banner-item {
@@ -871,13 +871,13 @@ const Admin = () => {
                 border-radius: 8px;
                 overflow: hidden;
             }
-
+            
             .banner-item img {
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
             }
-
+            
             .delete-btn {
                 position: absolute;
                 top: 5px;
@@ -890,10 +890,73 @@ const Admin = () => {
                 cursor: pointer;
             }
 
-            @media (max-width: 768px) {
-                .sidebar { transform: translateX(-100%); transition: transform 0.3s; z-index: 100; }
-                .sidebar.open { transform: translateX(0); }
-                .main-content { margin-left: 0; padding: 20px; }
+            /* Desktop Styles */
+            @media (min-width: 900px) {
+                .admin-layout {
+                    flex-direction: row;
+                    padding-bottom: 0;
+                }
+
+                .sidebar {
+                    width: 250px;
+                    height: auto; /* Full height */
+                    position: fixed;
+                    top: var(--nav-height);
+                    left: 0;
+                    bottom: 0;
+                    border-top: none;
+                    border-right: 1px solid var(--border);
+                    flex-direction: column;
+                    justify-content: flex-start;
+                }
+
+                .sidebar-header {
+                    display: block;
+                    padding: 20px;
+                    border-bottom: 1px solid var(--border);
+                }
+                
+                .sidebar-nav {
+                    display: flex;
+                    flex-direction: column;
+                    padding: 20px 0;
+                }
+
+                .sidebar-nav button {
+                    flex-direction: row;
+                    width: 100%;
+                    padding: 15px 20px;
+                    font-size: 1rem;
+                    border-top: none;
+                    justify-content: flex-start;
+                }
+
+                .sidebar-nav button:hover, .sidebar-nav button.active {
+                    background: #eff6ff;
+                    border-top: none;
+                    border-right: 3px solid var(--primary);
+                }
+
+                .main-content {
+                    margin-left: 250px;
+                    padding: 40px;
+                }
+
+                .admin-section {
+                    padding: 30px;
+                    max-width: 900px;
+                }
+                
+                .form-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                }
+                
+                .banners-grid {
+                    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                    gap: 15px;
+                }
             }
         `}</style>
         </div>

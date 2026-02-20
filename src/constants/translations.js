@@ -35,6 +35,7 @@ export const translations = {
             subtitle: "Déjanos un mensaje y te responderemos pronto.",
             name: "Nombre",
             email: "Email",
+            phone: "Teléfono",
             message: "Mensaje",
             send: "Enviar Mensaje",
             sending: "Enviando...",
@@ -89,64 +90,7 @@ export const translations = {
             subtitle: "Leave us a message and we'll get back to you soon.",
             name: "Name",
             email: "Email",
-            message: "Message",
-            send: "Send Message",
-            sending: "Sending...",
-            success_title: "Message Sent!",
-            success_msg: "Thanks for contacting us. We will respond shortly.",
-            send_another: "Send another",
-            error: "There was an error sending. Please try again.",
-        },
-        about: {
-            title: "About Us",
-        },
-        product_names: {
-            "PRODUCTOS PUBLICITARIOS": "Productos Publicitarios",
-            "STICKERS PERSONALIZADOS": "Stickers Personalizados",
-            "INVITACIONES PERSONALIZADAS": "Invitaciones Personalizadas",
-            "IMPRESIONES 3D": "Impresiones 3D",
-            "GRABADO LASER": "Grabado Láser",
-            "CORTE LASER": "Corte Láser",
-            "TAZAS SUBLIMADAS": "Tazas Sublimadas",
-            "UV DTF": "UV DTF"
-        }
-    },
-    en: {
-        nav: {
-            home: "Home",
-            about: "About Us",
-            products: "Products",
-            contact: "Contact",
-        },
-        hero: {
-            title: "We Create Unique Digital Experiences",
-            subtitle: "Transforming your ideas into innovative solutions.",
-            cta: "View Portfolio",
-        },
-        gallery: {
-            title: "Our Work",
-            subtitle: "Explore our categories and recent projects.",
-            loading: "Loading portfolio...",
-            view_gallery: "View Gallery",
-            photos: "photos",
-            no_description: "No description available.",
-            no_photos: "No additional photos.",
-            modal: {
-                quote: "Request Quote",
-                whatsapp: "WhatsApp",
-                follow: "Follow us:",
-            }
-        },
-        cta_box: {
-            title: "Have an idea in mind?",
-            text: "We turn your ideas into high-quality tangible products.",
-            button: "Get Quote Now",
-        },
-        contact: {
-            title: "Contact Us",
-            subtitle: "Leave us a message and we'll get back to you soon.",
-            name: "Name",
-            email: "Email",
+            phone: "Phone",
             message: "Message",
             send: "Send Message",
             sending: "Sending...",

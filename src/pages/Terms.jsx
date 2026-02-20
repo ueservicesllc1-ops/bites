@@ -86,42 +86,54 @@ const Terms = () => {
             </div>
             <style>{`
                 .policy-page {
-                    padding-top: 120px;
+                    padding-top: calc(var(--nav-height) + 40px);
                     min-height: 80vh;
                     background: #f8fafc;
                 }
                 .policy-page h1 {
-                    font-size: 2.5rem;
-                    margin-bottom: 10px;
+                    font-size: 2rem;
+                    margin-bottom: 5px;
                     color: var(--secondary);
+                    line-height: 1.2;
                 }
                 .last-update {
                     color: var(--muted-text);
-                    margin-bottom: 40px;
+                    margin-bottom: 30px;
                     font-style: italic;
+                    font-size: 0.9rem;
                 }
                 .policy-content {
                     background: white;
-                    padding: 40px;
+                    padding: 25px; /* Mobile Padding */
                     border-radius: 12px;
                     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
                 }
                 .policy-section {
-                    margin-bottom: 30px;
+                    margin-bottom: 25px;
                 }
                 .policy-section h3 {
-                    font-size: 1.3rem;
-                    margin-bottom: 15px;
+                    font-size: 1.1rem;
+                    margin-bottom: 10px;
                     color: var(--primary);
                 }
                 .policy-section p, .policy-section li {
                     color: var(--secondary);
                     line-height: 1.6;
-                    margin-bottom: 10px;
+                    margin-bottom: 8px;
+                    font-size: 0.95rem;
                 }
                 .policy-section ul {
                     padding-left: 20px;
-                    margin-top: 10px;
+                    margin-top: 8px;
+                }
+
+                /* Desktop Styles */
+                @media (min-width: 768px) {
+                    .policy-page h1 { font-size: 2.5rem; margin-bottom: 10px; }
+                    .policy-content { padding: 40px; }
+                    .policy-section h3 { font-size: 1.3rem; margin-bottom: 15px; }
+                    .policy-section p, .policy-section li { font-size: 1rem; margin-bottom: 10px; }
+                    .last-update { font-size: 1rem; margin-bottom: 40px; }
                 }
             `}</style>
         </div>

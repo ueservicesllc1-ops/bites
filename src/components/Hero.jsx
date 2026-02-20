@@ -126,7 +126,8 @@ const Hero = () => {
       <style>{`
         .hero-slider {
           position: relative;
-          height: 650px;
+          height: 85vh; /* Mobile height */
+          max-height: 600px;
           width: 100%;
           overflow: hidden;
           margin-top: var(--nav-height);
@@ -145,7 +146,7 @@ const Hero = () => {
           background-position: center;
           display: flex;
           align-items: center;
-          justify-content: flex-start; /* Ensure left alignment */
+          justify-content: center; /* Center on mobile */
         }
 
         .slide.active {
@@ -158,7 +159,7 @@ const Hero = () => {
           left: 0;
           width: 100%;
           height: 100%;
-          background: transparent;
+          background: rgba(0,0,0,0.4); /* Darker overlay for readability on mobile */
           z-index: 1;
         }
 
@@ -169,39 +170,45 @@ const Hero = () => {
           width: 100%;
           display: flex;
           flex-direction: column;
-          align-items: flex-start;
-          text-align: left;
-          max-width: 600px;
-          padding-left: 5%; /* Push from the very edge */
-          padding-right: 20px;
+          align-items: center; /* Center align on mobile */
+          text-align: center;
+          max-width: 100%;
+          padding: 0 20px;
         }
 
         .slide-content h1 {
-          font-size: 3.5rem;
+          font-size: 2.5rem; /* Mobile font size */
           margin-bottom: 1rem;
           text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
           color: white;
+          line-height: 1.1;
         }
 
         .slide-content p {
-          font-size: 1.25rem;
+          font-size: 1.1rem;
           margin-bottom: 2rem;
-          opacity: 0.9;
+          opacity: 0.95;
           text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+          max-width: 90%;
         }
 
         .slide-content .btn-primary {
           background: var(--accent);
           color: var(--secondary);
           border-color: var(--accent);
+          width: 100%; /* Full width button on mobile */
+          max-width: 280px;
         }
+        
         .slide-content .btn-primary:hover {
           background: white;
           border-color: white;
           transform: translateY(-2px);
         }
 
+        /* Nav buttons hidden on mobile by default */
         .slider-btn {
+          display: none;
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
@@ -211,7 +218,6 @@ const Hero = () => {
           width: 50px;
           height: 50px;
           border-radius: 50%;
-          display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
@@ -238,8 +244,8 @@ const Hero = () => {
         }
 
         .indicator {
-          width: 12px;
-          height: 12px;
+          width: 10px;
+          height: 10px;
           border-radius: 50%;
           background: rgba(255,255,255,0.3);
           border: none;
@@ -268,10 +274,50 @@ const Hero = () => {
           }
         }
 
-        @media (max-width: 768px) {
-          .slide-content h1 { font-size: 2.5rem; }
-          .hero-slider { height: 400px; }
-          .slider-btn { display: none; }
+        /* Desktop Styles */
+        @media (min-width: 768px) {
+          .hero-slider {
+            height: 650px;
+            max-height: none;
+          }
+
+          .slide {
+            justify-content: flex-start; /* Left align on desktop */
+          }
+
+          .overlay {
+            background: rgba(0,0,0,0.2);
+          }
+
+          .slide-content {
+            align-items: flex-start;
+            text-align: left;
+            max-width: 600px;
+            padding-left: 5%; /* Push from the very edge */
+            padding-right: 20px;
+          }
+
+          .slide-content h1 {
+            font-size: 4rem;
+          }
+
+          .slide-content p {
+            font-size: 1.25rem;
+            max-width: 100%;
+          }
+
+          .slide-content .btn-primary {
+            width: auto;
+          }
+
+          .slider-btn {
+            display: flex; /* Show nav buttons */
+          }
+          
+          .indicator {
+            width: 12px;
+            height: 12px;
+          }
         }
       `}</style>
     </section>

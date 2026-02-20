@@ -7,7 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 const ContactSection = () => {
   const { t } = useLanguage();
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -23,7 +23,7 @@ const ContactSection = () => {
         createdAt: new Date()
       });
       setStatus('success');
-      setFormData({ name: '', email: '', message: '' });
+      setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (error) {
       console.error(error);
       setStatus('error');
@@ -58,6 +58,10 @@ const ContactSection = () => {
                 <input type="email" name="email" value={formData.email} onChange={handleChange} required />
               </div>
               <div className="form-group">
+                <label>{t('contact.phone')}</label>
+                <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required />
+              </div>
+              <div className="form-group">
                 <label>{t('contact.message')}</label>
                 <textarea name="message" value={formData.message} onChange={handleChange} required rows={4}></textarea>
               </div>
@@ -70,30 +74,37 @@ const ContactSection = () => {
         </div>
       </div>
       <style>{`
-                /* ... keep existing styles ... */
-                .contact-section { background: #f8fafc; }
-                .contact-form-wrapper {
-                    max-width: 600px;
-                    margin: 0 auto;
-                    background: white;
-                    padding: 40px;
-                    border-radius: 12px;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-                }
-                .contact-form .form-group { margin-bottom: 20px; }
-                .contact-form label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--secondary); }
-                .contact-form input, .contact-form textarea {
-                    width: 100%;
-                    padding: 12px;
-                    border: 1px solid var(--border);
-                    border-radius: 8px;
-                    font-family: inherit;
-                }
-                .contact-form button { width: 100%; }
-                .success-msg { text-align: center; padding: 40px 20px; }
-                .success-msg h3 { color: var(--primary); margin-bottom: 10px; }
-                .error-text { color: red; text-align: center; margin-top: 10px; }
-            `}</style>
+        .contact-section { background: #f8fafc; }
+        .contact-form-wrapper {
+          max-width: 600px;
+          margin: 0 auto;
+          background: white;
+          padding: 25px; /* Mobile padding */
+          border-radius: 12px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .contact-form .form-group { margin-bottom: 15px; }
+        .contact-form label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--secondary); font-size: 0.9rem; }
+        .contact-form input, .contact-form textarea {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          font-family: inherit;
+          font-size: 16px; /* Prevent zoom on mobile */
+        }
+        .contact-form button { width: 100%; padding: 14px; }
+        .success-msg { text-align: center; padding: 40px 20px; }
+        .success-msg h3 { color: var(--primary); margin-bottom: 10px; font-size: 1.5rem; }
+        .error-text { color: red; text-align: center; margin-top: 10px; }
+
+        /* Desktop Styles */
+        @media (min-width: 768px) {
+          .contact-form-wrapper { padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+          .contact-form .form-group { margin-bottom: 20px; }
+          .contact-form label { margin-bottom: 8px; font-size: 1rem; }
+        }
+      `}</style>
     </section>
   );
 };
@@ -257,7 +268,7 @@ const ProductGallery = () => {
         .portfolio-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
+            gap: 20px;
         }
 
         .portfolio-item {
@@ -327,7 +338,7 @@ const ProductGallery = () => {
             color: var(--muted-text);
         }
 
-        /* Modal Styles */
+        /* Modal Styles - Mobile First */
         .gallery-modal-overlay {
             position: fixed;
             top: 0;
@@ -339,7 +350,7 @@ const ProductGallery = () => {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 10px; /* Smaller padding on mobile */
             backdrop-filter: blur(5px);
             animation: fadeIn 0.3s ease;
         }
@@ -347,10 +358,10 @@ const ProductGallery = () => {
         .gallery-modal-content {
             background: white;
             width: 100%;
-            max-width: 1200px; /* Wider for side-by-side */
-            height: 85vh; /* Fixed height for scrollable areas */
+            max-width: 1200px;
+            height: 90vh; /* Max height for mobile */
             border-radius: 12px;
-            overflow: hidden; /* Hide overflow from rounded corners */
+            overflow-y: auto; /* Allow full modal scroll on mobile */
             position: relative;
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             animation: slideUp 0.3s ease;
@@ -360,23 +371,26 @@ const ProductGallery = () => {
 
         .modal-layout {
             display: flex;
-            height: 100%;
-            overflow: hidden;
+            flex-direction: column-reverse; /* Info on bottom (or top depending on preference, actually often info first is better for context, but design was reverse) */
+            /* Previous design had reverse on mobile, meaning Gallery on top, Info on bottom? No wait. 
+               Desktop: Gallery Left, Info Right.
+               Mobile (previous): Column Reverse -> Info Bottom, Gallery Top?
+               Let's stick to: Gallery Top, Info Bottom for mobile.
+            */
+            width: 100%;
         }
 
         .modal-gallery-column {
-            flex: 3; /* 75% width */
+            width: 100%;
             background: #f8fafc;
-            padding: 30px;
-            overflow-y: auto;
+            padding: 15px;
+            /* On mobile, this just flows */
         }
 
         .modal-info-column {
-            flex: 1; /* 25% width */
+            width: 100%;
             background: white;
-            padding: 40px 30px;
-            border-left: 1px solid #e2e8f0;
-            overflow-y: auto;
+            padding: 60px 20px 30px 20px; /* Top padding for close button */
             position: relative;
         }
 
@@ -395,7 +409,7 @@ const ProductGallery = () => {
             cursor: pointer;
             color: var(--secondary);
             transition: background 0.2s;
-            z-index: 10;
+            z-index: 20; /* Ensure above content */
         }
         
         .close-modal-btn:hover {
@@ -404,8 +418,8 @@ const ProductGallery = () => {
         }
 
         .modal-info-column h3 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
             color: var(--secondary);
             line-height: 1.2;
         }
@@ -418,14 +432,14 @@ const ProductGallery = () => {
 
         .modal-gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Smaller grid items on mobile */
+            gap: 10px;
         }
 
         .modal-img-item {
             border-radius: 8px;
             overflow: hidden;
-            height: 250px;
+            height: 180px; /* Smaller height on mobile */
             background: #e2e8f0;
             cursor: zoom-in;
         }
@@ -460,13 +474,13 @@ const ProductGallery = () => {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 10px;
             animation: fadeIn 0.2s ease;
         }
 
         .lightbox-img {
             max-width: 100%;
-            max-height: 90vh;
+            max-height: 80vh; /* Leave room for close button */
             border-radius: 4px;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
@@ -475,12 +489,12 @@ const ProductGallery = () => {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: transparent;
+            background: rgba(255,255,255,0.1);
             border: none;
             color: white;
             cursor: pointer;
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -489,33 +503,11 @@ const ProductGallery = () => {
         }
 
         .lightbox-close:hover {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.3);
         }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        @media (max-width: 900px) {
-            .modal-layout {
-                flex-direction: column-reverse; /* Info on top/bottom, Gallery on other */
-                overflow-y: auto;
-            }
-            .gallery-modal-content {
-                height: 90vh;
-                display: block; /* Use block for vertical scrolling on mobile */
-            }
-            .modal-gallery-column, .modal-info-column {
-                width: 100%;
-                flex: none;
-                border: none;
-                overflow: visible;
-                height: auto;
-            }
-            .modal-info-column {
-                padding-top: 50px; /* Space for close button */
-            }
-            .portfolio-grid { grid-template-columns: 1fr; }
-        }
 
         .modal-actions-container {
             display: flex;
@@ -605,6 +597,49 @@ const ProductGallery = () => {
         .social-link.facebook:hover {
             background: #1877F2;
         }
+
+        /* Desktop View (min-width: 900px) */
+        @media (min-width: 900px) {
+            .gallery-modal-content {
+                height: 85vh;
+                overflow: hidden; /* Hide main scrollbar */
+                display: flex;
+            }
+
+            .modal-layout {
+                flex-direction: row; /* Side by side */
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .modal-gallery-column {
+                flex: 3;
+                height: 100%;
+                overflow-y: auto;
+                padding: 30px;
+            }
+
+            .modal-info-column {
+                flex: 1;
+                height: 100%;
+                overflow-y: auto;
+                padding: 40px 30px;
+                border-left: 1px solid #e2e8f0;
+            }
+            
+            .modal-img-item {
+                height: 250px;
+            }
+            
+            .modal-gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+             .modal-info-column h3 {
+                font-size: 1.8rem;
+            }
+        }
       `}</style>
     </section>
   );
@@ -633,27 +668,27 @@ const Home = () => {
       <style>{`
         .section-header {
           text-align: center;
-          margin-bottom: 40px;
+          margin-bottom: 30px;
         }
 
         .section-header h2 {
-          font-size: 2.5rem;
+          font-size: 2rem;
         }
 
         .section-header p {
           color: var(--muted-text);
-          font-size: 1.1rem;
+          font-size: 1rem;
         }
 
         .cta-section {
-          padding: 60px 0;
+          padding: 40px 0;
         }
 
         .cta-box {
           background: #FFFFFF;
           border: 2px solid var(--border);
           border-radius: 12px;
-          padding: 60px 40px;
+          padding: 30px 20px; /* Mobile padding */
           text-align: center;
           position: relative;
           overflow: hidden;
@@ -662,13 +697,23 @@ const Home = () => {
 
         .cta-box h2 {
           color: var(--secondary);
-          margin-bottom: 20px;
+          margin-bottom: 15px;
         }
 
         .cta-box p {
           color: var(--muted-text);
-          margin-bottom: 30px;
-          font-size: 1.2rem;
+          margin-bottom: 20px;
+          font-size: 1.1rem;
+        }
+
+        @media (min-width: 768px) {
+          .section-header { margin-bottom: 40px; }
+          .section-header h2 { font-size: 2.5rem; }
+          .section-header p { font-size: 1.1rem; }
+          .cta-section { padding: 60px 0; }
+          .cta-box { padding: 60px 40px; }
+          .cta-box h2 { margin-bottom: 20px; }
+          .cta-box p { margin-bottom: 30px; font-size: 1.2rem; }
         }
       `}</style>
     </>

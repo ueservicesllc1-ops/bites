@@ -1,30 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Updated Brand Colors: White Background, Blue/Black/Yellow Accents */
+  /* Brand Colors */
   --primary: #2563EB;
-  /* Royal Blue */
   --primary-hover: #1D4ED8;
   --secondary: #000000;
-  /* Black */
   --accent: #FACC15;
-  /* Yellow */
 
   --dark-bg: #FFFFFF;
-  /* Changed to White */
   --dark-card: #F8FAFC;
-  /* Very Light Gray for cards */
   --light-text: #1E293B;
-  /* Dark Slate for text on white */
   --muted-text: #64748B;
-  /* Slate 500 */
   --border: #E2E8F0;
-  /* Light border */
 
   --font-heading: 'Space Grotesk', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
 
-  --nav-height: 80px;
+  --nav-height: 70px;
+  /* Slightly smaller for mobile */
 }
 
 * {
@@ -41,6 +34,8 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  font-size: 16px;
+  /* Base font size */
 }
 
 h1,
@@ -57,15 +52,29 @@ h6 {
   letter-spacing: -0.5px;
 }
 
-/* Utilities */
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+/* Utilities - Mobile First */
 .container {
-  max-width: 1280px;
+  width: 100%;
+  padding: 0 16px;
+  /* Smaller padding on mobile */
   margin: 0 auto;
-  padding: 0 20px;
 }
 
 .section-padding {
-  padding: 80px 0;
+  padding: 60px 0;
+  /* Reduced padding on mobile */
 }
 
 .text-gradient {
@@ -79,31 +88,39 @@ h6 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 28px;
+  padding: 12px 24px;
+  /* Touch friendly */
   border-radius: 5px;
-  /* Boxier modern look */
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 100%;
+  /* Full width on mobile often better */
+  max-width: 400px;
+  /* But not too wide */
+}
+
+@media (min-width: 480px) {
+  .btn {
+    width: auto;
+    /* Auto width on larger screens */
+  }
 }
 
 .btn-primary {
   background: var(--secondary);
-  /* Black button */
   color: #FFFFFF;
   border: 2px solid var(--secondary);
 }
 
 .btn-primary:hover {
   background: var(--primary);
-  /* Blue on hover */
   border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: 5px 5px 0px var(--accent);
-  /* Yellow shadow pop */
+  box-shadow: 4px 4px 0px var(--accent);
 }
 
 .btn-outline {
@@ -114,10 +131,9 @@ h6 {
 
 .btn-outline:hover {
   background: var(--accent);
-  /* Yellow background */
   color: var(--secondary);
   border-color: var(--secondary);
-  box-shadow: 5px 5px 0px var(--secondary);
+  box-shadow: 4px 4px 0px var(--secondary);
 }
 
 /* Footer Links */
@@ -126,6 +142,8 @@ h6 {
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.2s;
+  padding: 5px;
+  /* Increase touch target */
 }
 
 .footer-link:hover {
@@ -157,4 +175,44 @@ h6 {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* Responsive Breakpoints (Mobile First) */
+
+/* Tablet */
+@media (min-width: 768px) {
+  :root {
+    --nav-height: 80px;
+  }
+
+  h1 {
+    font-size: 3.5rem;
+  }
+
+  h2 {
+    font-size: 2.5rem;
+  }
+
+  .container {
+    max-width: 768px;
+    padding: 0 24px;
+  }
+
+  .section-padding {
+    padding: 80px 0;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
 }

@@ -181,48 +181,52 @@ const Cart = () => {
             <style>{`
                 .cart-page {
                     min-height: 80vh;
-                    padding-top: calc(var(--nav-height) + 40px);
+                    padding-top: calc(var(--nav-height) + 20px);
                 }
                 
                 .page-title {
-                    font-size: 2rem;
-                    margin-bottom: 40px;
+                    font-size: 1.8rem;
+                    margin-bottom: 25px;
                     color: var(--secondary);
+                    text-align: center;
                 }
 
                 .cart-layout {
                     display: grid;
-                    grid-template-columns: 1.5fr 1fr;
-                    gap: 40px;
+                    grid-template-columns: 1fr; /* Stacked by default */
+                    gap: 30px;
                 }
 
-                @media (max-width: 900px) {
+                @media (min-width: 900px) {
                     .cart-layout {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: 1.5fr 1fr; /* Side-by-side on desktop */
+                        gap: 40px;
                     }
+                    .page-title { text-align: left; font-size: 2.5rem; }
+                    .cart-page { padding-top: calc(var(--nav-height) + 40px); }
                 }
 
                 /* Cart Items */
                 .cart-items-container {
                     display: flex;
                     flex-direction: column;
-                    gap: 20px;
+                    gap: 15px;
                 }
 
                 .cart-item-card {
-                    display: flex;
-                    align-items: center;
                     background: #fff;
                     border: 1px solid var(--border);
                     padding: 15px;
                     border-radius: 12px;
-                    gap: 20px;
+                    display: grid;
+                    grid-template-columns: 80px 1fr;
+                    gap: 15px;
+                    align-items: center;
                 }
 
                 .item-image-wrapper {
                     width: 80px;
                     height: 80px;
-                    flex-shrink: 0;
                 }
 
                 .cart-item-img, .item-placeholder {
@@ -233,11 +237,11 @@ const Cart = () => {
                 }
 
                 .item-info {
-                    flex: 1;
+                    /* In grid layout, this just takes the next cell */
                 }
 
                 .item-info h3 {
-                    font-size: 1.1rem;
+                    font-size: 1rem;
                     margin-bottom: 5px;
                     color: var(--secondary);
                 }
@@ -245,13 +249,33 @@ const Cart = () => {
                 .item-info .price {
                     color: var(--primary);
                     font-weight: 700;
-                    font-size: 1.1rem;
+                    font-size: 1rem;
                 }
 
                 .item-actions {
+                    grid-column: 1 / -1; /* Span full width on very small mobile if needed, or keep inline */
                     display: flex;
+                    justify-content: space-between;
                     align-items: center;
-                    gap: 20px;
+                    margin-top: 10px;
+                    border-top: 1px solid #f1f5f9;
+                    padding-top: 10px;
+                }
+
+                @media (min-width: 480px) {
+                    .cart-item-card {
+                        display: flex;
+                        align-items: center;
+                        gap: 20px;
+                    }
+                    
+                    .item-actions {
+                        margin-top: 0;
+                        border-top: none;
+                        padding-top: 0;
+                        justify-content: flex-end;
+                        width: auto;
+                    }
                 }
 
                 .qty-selector {

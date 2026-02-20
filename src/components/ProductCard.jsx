@@ -72,10 +72,13 @@ const ProductCard = ({ product }) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          opacity: 0;
-          transform: translateY(20px);
+          /* Mobile First: Always visible */
+          opacity: 1;
+          transform: translateY(0);
           transition: all 0.3s ease;
           box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          border: none;
+          cursor: pointer;
         }
 
         .add-btn:hover {
@@ -83,26 +86,34 @@ const ProductCard = ({ product }) => {
           color: white;
         }
 
-        .product-card:hover .add-btn {
-          opacity: 1;
-          transform: translateY(0);
+        /* Desktop Hover Effect */
+        @media (min-width: 1024px) {
+          .add-btn {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+
+          .product-card:hover .add-btn {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .product-info {
-          padding: 20px;
+          padding: 15px; /* Slightly tighter on mobile */
         }
 
         .product-info h3 {
           font-size: 1.1rem;
           margin-bottom: 5px;
-          color: var(--light-text); /* This variable is now dark #1E293B */
+          color: var(--light-text);
           font-weight: 700;
         }
 
         .product-category {
           font-size: 0.85rem;
           color: var(--muted-text);
-          margin-bottom: 15px;
+          margin-bottom: 10px;
           text-transform: uppercase;
           letter-spacing: 1px;
           font-weight: 600;
@@ -112,6 +123,11 @@ const ProductCard = ({ product }) => {
           font-size: 1.25rem;
           font-weight: 800;
           color: var(--primary);
+        }
+
+        @media (min-width: 768px) {
+          .product-info { padding: 20px; }
+          .product-category { margin-bottom: 15px; }
         }
       `}</style>
     </div>

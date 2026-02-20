@@ -26,33 +26,96 @@ const Footer = () => {
     }, []);
 
     return (
-        <footer style={{
-            background: '#000000',
-            padding: '60px 20px',
-            textAlign: 'center',
-            marginTop: 'auto',
-            color: '#FFFFFF'
-        }}>
-            <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <h3 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>BITES CREATIVE</h3>
+        <footer className="site-footer">
+            <div className="container footer-content">
+                <h3>BITES CREATIVE</h3>
 
-                <div className="footer-links" style={{ display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                <div className="footer-links">
                     <Link to="/about" className="footer-link">{t('nav.about')}</Link>
                     <Link to="/shipping" className="footer-link">{t('footer.shipping')}</Link>
                     <Link to="/terms" className="footer-link">{t('footer.terms')}</Link>
                     <Link to="/privacy" className="footer-link">{t('footer.privacy')}</Link>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
-                    {footerConfig.instagram && <a href={footerConfig.instagram} target="_blank" rel="noopener noreferrer" style={{ color: '#94A3B8' }}>Instagram</a>}
-                    {footerConfig.facebook && <a href={footerConfig.facebook} target="_blank" rel="noopener noreferrer" style={{ color: '#94A3B8' }}>Facebook</a>}
-                    {footerConfig.tiktok && <a href={footerConfig.tiktok} target="_blank" rel="noopener noreferrer" style={{ color: '#94A3B8' }}>TikTok</a>}
-                </div>
-                {/* Optional: Add Phone/Address if available in config */}
-                {footerConfig.phone && <p style={{ color: '#64748B', fontSize: '0.9rem' }}>{footerConfig.phone}</p>}
-                {footerConfig.email && <p style={{ color: '#64748B', fontSize: '0.9rem' }}>{footerConfig.email}</p>}
 
-                <p style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '10px' }}>© 2026 Bites Creative Labs. {t('footer.rights')}</p>
+                <div className="social-links">
+                    {footerConfig.instagram && <a href={footerConfig.instagram} target="_blank" rel="noopener noreferrer">Instagram</a>}
+                    {footerConfig.facebook && <a href={footerConfig.facebook} target="_blank" rel="noopener noreferrer">Facebook</a>}
+                    {footerConfig.tiktok && <a href={footerConfig.tiktok} target="_blank" rel="noopener noreferrer">TikTok</a>}
+                </div>
+
+                <div className="contact-info">
+                    {footerConfig.phone && <p>{footerConfig.phone}</p>}
+                    {footerConfig.email && <p>{footerConfig.email}</p>}
+                </div>
+
+                <p className="copyright">© 2026 Bites Creative Labs. {t('footer.rights')}</p>
+                <p className="powered-by">Designed and Powered by <span style={{ color: 'white', fontWeight: 'bold' }}>Freedom Labs</span></p>
             </div>
+
+            <style>{`
+                .site-footer {
+                    background: #000000;
+                    padding: 40px 0;
+                    text-align: center;
+                    margin-top: auto;
+                    color: #FFFFFF;
+                }
+                
+                .footer-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                    padding: 0 20px;
+                }
+                
+                .site-footer h3 {
+                    font-size: 1.5rem;
+                    margin-bottom: 10px;
+                }
+
+                .footer-links {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                }
+                
+                .footer-link {
+                    color: #FFFFFF;
+                    text-decoration: none;
+                }
+                
+                .social-links {
+                    display: flex;
+                    justify-content: center;
+                    gap: 20px;
+                    margin: 10px 0;
+                }
+                
+                .social-links a {
+                    color: #94A3B8;
+                    text-decoration: none;
+                }
+                
+                .contact-info p, .copyright, .powered-by {
+                    color: #64748B;
+                    font-size: 0.9rem;
+                    margin: 2px 0;
+                }
+                
+                .copyright {
+                    margin-top: 15px;
+                }
+
+                /* Desktop Styles */
+                @media (min-width: 768px) {
+                    .footer-links {
+                        flex-direction: row;
+                        justify-content: center;
+                        gap: 25px;
+                        flex-wrap: wrap;
+                    }
+                }
+            `}</style>
         </footer>
     );
 };
