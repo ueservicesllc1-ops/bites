@@ -109,7 +109,7 @@ const ContactSection = () => {
   );
 };
 
-import { X, MessageCircle, Facebook, Instagram } from 'lucide-react';
+import { X, MessageCircle, Facebook, Instagram, Share2, Copy, Check } from 'lucide-react';
 
 const ProductGallery = () => {
   const { t } = useLanguage();
@@ -117,6 +117,7 @@ const ProductGallery = () => {
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [viewImage, setViewImage] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -136,6 +137,25 @@ const ProductGallery = () => {
     };
     fetchProducts();
   }, []);
+
+  const handleShare = (e, product, type) => {
+    e.stopPropagation();
+    // For individual sharing, we can use the image URL or a deep link
+    const imageLink = product.imageUrl;
+    const siteLink = `${window.location.origin}/#gallery`;
+
+    if (type === 'copy') {
+      navigator.clipboard.writeText(imageLink);
+      setCopiedId(product.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } else if (type === 'facebook') {
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(imageLink)}`;
+      window.open(facebookUrl, '_blank');
+    } else if (type === 'instagram') {
+      // Instagram doesn't have a web sharer, so we link to the profile or open the app
+      window.open('https://instagram.com/BitesCreative', '_blank');
+    }
+  };
 
   const openGallery = (product) => {
     setSelectedProduct(product);
@@ -170,6 +190,29 @@ const ProductGallery = () => {
               >
                 <div className="img-container">
                   <img src={product.imageUrl} alt={displayName} />
+                  <div className="gallery-actions">
+                    <button
+                      className="gallery-action-btn"
+                      onClick={(e) => handleShare(e, product, 'copy')}
+                      title={t('gallery.modal.copy_link')}
+                    >
+                      {copiedId === product.id ? <Check size={18} color="#4ade80" /> : <Copy size={18} />}
+                    </button>
+                    <button
+                      className="gallery-action-btn"
+                      onClick={(e) => handleShare(e, product, 'facebook')}
+                      title={t('gallery.modal.share_facebook')}
+                    >
+                      <Facebook size={18} fill="white" />
+                    </button>
+                    <button
+                      className="gallery-action-btn"
+                      onClick={(e) => handleShare(e, product, 'instagram')}
+                      title="Instagram"
+                    >
+                      <Instagram size={18} />
+                    </button>
+                  </div>
                   <div className="overlay-hover">
                     <span>{t('gallery.view_gallery')}</span>
                   </div>
@@ -188,6 +231,7 @@ const ProductGallery = () => {
         {/* Modal Gallery */}
         {selectedProduct && (() => {
           const modalDisplayName = t(`product_names.${selectedProduct.name}`) || selectedProduct.name;
+          const modalShareUrl = `${window.location.origin}/#gallery`;
           return (
             <div className="gallery-modal-overlay" onClick={closeGallery}>
               <div className="gallery-modal-content" onClick={e => e.stopPropagation()}>
@@ -221,6 +265,36 @@ const ProductGallery = () => {
                     </div>
 
                     <div className="modal-actions-container">
+                      <div className="modal-share-row">
+                        <button
+                          className={`modal-action-btn secondary ${copiedId === selectedProduct.id ? 'success' : ''}`}
+                          onClick={(e) => handleShare(e, selectedProduct, 'copy')}
+                        >
+                          {copiedId === selectedProduct.id ? <Check size={18} /> : <Copy size={18} />}
+                          {copiedId === selectedProduct.id ? t('gallery.modal.link_copied') : t('gallery.modal.copy_link')}
+                        </button>
+
+                        <a
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(selectedProduct.imageUrl)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="modal-action-btn facebook-btn"
+                        >
+                          <Facebook size={18} fill="white" />
+                          {t('gallery.modal.share_facebook')}
+                        </a>
+
+                        <a
+                          href="https://instagram.com/BitesCreative"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="modal-action-btn instagram-btn"
+                        >
+                          <Instagram size={18} />
+                          Instagram
+                        </a>
+                      </div>
+
                       <button className="modal-action-btn primary" onClick={() => {
                         closeGallery();
                         const contactSection = document.querySelector('.contact-section');
@@ -509,27 +583,112 @@ const ProductGallery = () => {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+        .gallery-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 20;
+            opacity: 1; /* Always visible on mobile */
+        }
+
+        .gallery-action-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--secondary);
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .gallery-action-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .gallery-action-btn .lucide-facebook {
+            fill: #1877F2;
+            color: #1877F2;
+        }
+
+        .gallery-action-btn:hover .lucide-instagram {
+            color: white;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            border-radius: 50%;
+        }
+
         .modal-actions-container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             margin-top: 30px;
+        }
+
+        .modal-share-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .modal-share-row {
+                grid-template-columns: 1fr;
+            }
         }
 
         .modal-action-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            padding: 12px;
+            padding: 10px 5px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             text-decoration: none;
             border: none;
-            font-size: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .modal-action-btn.secondary {
+            background: #f1f5f9;
+            color: var(--secondary);
+        }
+
+        .modal-action-btn.secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .modal-action-btn.secondary.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .modal-action-btn.facebook-btn {
+            background: #1877F2;
+            color: white;
+        }
+
+        .modal-action-btn.facebook-btn:hover {
+            background: #0e5a9a;
+        }
+
+        .modal-action-btn.instagram-btn {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+        }
+
+        .modal-action-btn.instagram-btn:hover {
+            opacity: 0.9;
         }
 
         .modal-action-btn.primary {
@@ -600,6 +759,17 @@ const ProductGallery = () => {
 
         /* Desktop View (min-width: 900px) */
         @media (min-width: 900px) {
+            .gallery-actions {
+                opacity: 0;
+                transform: translateY(-10px);
+                transition: all 0.3s ease;
+            }
+
+            .portfolio-item:hover .gallery-actions {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
             .gallery-modal-content {
                 height: 85vh;
                 overflow: hidden; /* Hide main scrollbar */

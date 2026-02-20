@@ -23,6 +23,10 @@ export const translations = {
                 quote: "Solicitar Cotización",
                 whatsapp: "WhatsApp",
                 follow: "Síguenos:",
+                share: "Compartir",
+                copy_link: "Copiar Enlace",
+                link_copied: "¡Enlace copiado!",
+                share_facebook: "Compartir en Facebook",
             }
         },
         cta_box: {
@@ -78,6 +82,10 @@ export const translations = {
                 quote: "Request Quote",
                 whatsapp: "WhatsApp",
                 follow: "Follow us:",
+                share: "Share",
+                copy_link: "Copy Link",
+                link_copied: "Link copied!",
+                share_facebook: "Share on Facebook",
             }
         },
         cta_box: {
