@@ -3,12 +3,16 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Menu, X, Globe } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo_light_bg.png';
+import { User as UserIcon, LogOut } from 'lucide-react';
 
 const Navbar = () => {
   const { cartCount } = useCart();
   const { t, language, toggleLanguage } = useLanguage();
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   return (
     <nav className="navbar">
@@ -26,18 +30,47 @@ const Navbar = () => {
         </div>
 
         <div className="nav-actions">
+          {user ? (
+            <div className="user-menu-wrapper">
+              <button onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="user-profile-btn">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="Profile" className="user-avatar-small" />
+                ) : (
+                  <div className="user-avatar-placeholder">{(user.displayName || user.email || 'U').charAt(0).toUpperCase()}</div>
+                )}
+                <span className="user-name-label">{user.displayName?.split(' ')[0]}</span>
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="user-dropdown-fun">
+                  <div className="dropdown-header">
+                    <strong>{user.displayName || 'Usuario'}</strong>
+                    <span>{user.email}</span>
+                  </div>
+                  {user.role === 'admin' && <Link to="/admin" className="dropdown-item" onClick={() => setIsUserMenuOpen(false)}>Admin Panel</Link>}
+                  <button onClick={() => { logout(); setIsUserMenuOpen(false); }} className="dropdown-item logout-red">
+                    <LogOut size={16} /> Cerrar Sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/login" className="login-nav-btn">
+              <UserIcon size={20} />
+              <span>Entrar</span>
+            </Link>
+          )}
+
           {/* Language Toggle */}
           <button onClick={toggleLanguage} className="lang-toggle-btn" title="Change Language">
             <Globe size={20} />
             <span className="lang-code">{language.toUpperCase()}</span>
           </button>
 
-          {/* Cart hidden for now
           <Link to="/cart" className="cart-btn" aria-label="Open cart">
             <ShoppingCart size={24} />
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </Link>
-          */}
 
           <button
             className="menu-btn"
@@ -164,8 +197,94 @@ const Navbar = () => {
           color: var(--primary);
         }
 
-        /* Desktop View (min-width: 768px) */
+        /* User Menu Styles */
+        .user-menu-wrapper { position: relative; }
+        .user-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .user-profile-btn:hover { border-color: var(--primary); background: #f1f5f9; }
+        
+        .user-avatar-small, .user-avatar-placeholder {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .user-avatar-placeholder {
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 900;
+        }
+        .user-name-label { font-weight: 700; font-size: 0.85rem; color: var(--secondary); display: none; }
+
+        .user-dropdown-fun {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 200px;
+            background: white;
+            border: 2px solid #000;
+            border-radius: 12px;
+            box-shadow: 6px 6px 0px #000;
+            padding: 10px 0;
+            z-index: 1001;
+            animation: fadeIn 0.2s ease;
+        }
+        .dropdown-header {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+        }
+        .dropdown-header strong { font-size: 0.85rem; color: #000; }
+        .dropdown-header span { font-size: 0.7rem; color: #64748b; }
+
+        .dropdown-item {
+            width: 100%;
+            padding: 10px 15px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e293b;
+            text-decoration: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background: #f8fafc; color: var(--primary); }
+        .logout-red { color: #ef4444; }
+
+        .login-nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #000;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .login-nav-btn:hover { background: #334155; transform: scale(1.05); }
+
         @media (min-width: 768px) {
+          .user-name-label { display: block; }
           .logo-img {
             height: 50px;
           }

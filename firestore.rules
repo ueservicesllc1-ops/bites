@@ -30,5 +30,17 @@ service cloud.firestore {
     match /banners/{bannerId} {
       allow write: if request.auth != null;
     }
+
+    // Orders: Anyone can create (checkout), only Admin (Auth) can read/delete
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read, delete: if request.auth != null;
+    }
+
+    // Users: Users can manage their own profile, Admin can read all
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }

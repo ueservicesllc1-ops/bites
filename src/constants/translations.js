@@ -56,6 +56,12 @@ export const translations = {
             terms: "Términos",
             privacy: "Privacidad",
             rights: "Todos los derechos reservados."
+        },
+        promo: {
+            title: "¡Pide tus muestras de stickers GRATIS!",
+            subtitle: "Comprueba nuestra calidad premium antes de comprar.",
+            shipping_note: "Solo pagas el envío.",
+            cta: "¡Solicitar Ahora!",
         }
     },
     en: {
@@ -115,6 +121,12 @@ export const translations = {
             terms: "Terms",
             privacy: "Privacy",
             rights: "All rights reserved."
+        },
+        promo: {
+            title: "Request your FREE sticker samples!",
+            subtitle: "Check our premium quality before you buy.",
+            shipping_note: "Only pay for shipping.",
+            cta: "Request Now!",
         },
         product_names: {
             "PRODUCTOS PUBLICITARIOS": "Advertising Products",

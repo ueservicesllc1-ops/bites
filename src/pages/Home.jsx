@@ -4,12 +4,27 @@ import { db } from '../firebase/config';
 import { collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const ContactSection = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.displayName || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone || ''
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -815,10 +830,299 @@ const ProductGallery = () => {
   );
 };
 
+const PromoPopup = () => {
+  const { t } = useLanguage();
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
+  const [stickerImg, setStickerImg] = useState(null);
+
+  useEffect(() => {
+    // Only show if not seen in this session
+    const hasSeen = sessionStorage.getItem('bites_promo_seen');
+    if (hasSeen) return;
+
+    const fetchStickerImg = async () => {
+      try {
+        const q = query(collection(db, "products"));
+        const snapshot = await getDocs(q);
+        const stickerProd = snapshot.docs.find(doc =>
+          doc.data().name === 'STICKERS PERSONALIZADOS' ||
+          doc.data().name?.toLowerCase().includes('sticker')
+        );
+        if (stickerProd) {
+          setStickerImg(stickerProd.data().imageUrl);
+        }
+      } catch (err) {
+        console.error("Error fetching sticker img:", err);
+      }
+    };
+    fetchStickerImg();
+
+    // Small delay before showing to avoid "clash" at start
+    const showTimer = setTimeout(() => {
+      setIsVisible(true);
+    }, 1500);
+
+    const hideTimer = setTimeout(() => {
+      setIsVisible(false);
+    }, 15000);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  }, []);
+
+  const closePopup = () => {
+    setIsVisible(false);
+    sessionStorage.setItem('bites_promo_seen', 'true');
+  };
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="promo-overlay" onClick={closePopup}>
+      <div className="promo-content-fun" onClick={e => e.stopPropagation()}>
+        {/* Floating Stickers Decor */}
+        <div className="sticker-item s-top-left">BITES!</div>
+        <div className="sticker-item s-bottom-right">FREE</div>
+        <div className="sticker-item s-top-right">NEW</div>
+        <div className="sticker-item s-side">✨</div>
+
+        <button className="promo-close-fun" onClick={closePopup}>
+          <X size={28} />
+        </button>
+
+        <div className="promo-layout-split">
+          {stickerImg && (
+            <div className="promo-image-container">
+              <img src={stickerImg} alt="Sticker Sample" className="promo-sticker-img" />
+              <div className="img-tape"></div>
+            </div>
+          )}
+          <div className="promo-inner-fun">
+            <div className="fun-header">
+              <h2 className="title-fun">{t('promo.title')}</h2>
+            </div>
+            <div className="fun-body">
+              <p className="subtitle-fun">{t('promo.subtitle')}</p>
+              <div className="fun-actions">
+                <button className="cta-fun-btn" onClick={() => {
+                  if (!user) {
+                    navigate('/login', { state: { from: { pathname: '/' } } });
+                    closePopup();
+                    return;
+                  }
+                  closePopup();
+                  addToCart({
+                    id: 'sticker-sample-pack',
+                    name: t('promo.title'),
+                    price: 0,
+                    imageUrl: stickerImg,
+                    isSample: true
+                  });
+                  navigate('/cart');
+                }}>
+                  {t('promo.cta')}
+                </button>
+                <div className="disclaimer-fun-tag">
+                  <span>{t('promo.shipping_note')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <style>{`
+        .promo-overlay {
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(255, 255, 255, 0.4);
+          backdrop-filter: blur(12px);
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          animation: popUpIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .promo-content-fun {
+          background: #FFD600; /* Super Bright Yellow */
+          width: 100%;
+          max-width: 850px;
+          min-height: 400px;
+          border: 6px solid #000;
+          border-radius: 40px;
+          position: relative;
+          box-shadow: 15px 15px 0px #000;
+          padding: 40px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .promo-layout-split {
+          display: flex;
+          flex-direction: column;
+          gap: 30px;
+          align-items: center;
+        }
+        .promo-image-container {
+          width: 100%;
+          max-width: 300px;
+          position: relative;
+          transform: rotate(-3deg);
+          transition: transform 0.3s;
+        }
+        .promo-image-container:hover {
+          transform: rotate(0deg) scale(1.05);
+        }
+        .promo-sticker-img {
+          width: 100%;
+          aspect-ratio: 1/1;
+          object-fit: cover;
+          border: 6px solid white;
+          box-shadow: 10px 10px 20px rgba(0,0,0,0.2);
+          border-radius: 10px;
+        }
+        .img-tape {
+          position: absolute;
+          top: -20px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100px;
+          height: 35px;
+          background: rgba(255, 255, 255, 0.5);
+          backdrop-filter: blur(2px);
+          border: 1px solid rgba(0,0,0,0.1);
+        }
+        .sticker-item {
+          position: absolute;
+          background: white;
+          border: 3px solid #000;
+          padding: 8px 15px;
+          font-weight: 900;
+          font-family: var(--font-heading);
+          box-shadow: 4px 4px 0px #000;
+          z-index: 10;
+          font-size: 0.9rem;
+          pointer-events: none;
+        }
+        .s-top-left { top: -20px; left: -10px; transform: rotate(-15deg); color: #FF006E; border-radius: 50% 20% 50% 20%; }
+        .s-bottom-right { bottom: -15px; right: 20px; transform: rotate(10deg); color: #3A86FF; font-size: 1.1rem; border-radius: 5px; }
+        .s-top-right { top: 30px; right: -25px; transform: rotate(20deg); color: #8338EC; }
+        .s-side { bottom: 50px; left: -20px; transform: rotate(-10deg); font-size: 1.5rem; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+
+        .title-fun {
+          font-size: 2.5rem;
+          color: #000;
+          text-align: center;
+          margin-bottom: 20px;
+          line-height: 0.9;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: -2px;
+          text-shadow: 3px 3px 0px white;
+        }
+        .subtitle-fun {
+          font-size: 1.2rem;
+          font-weight: 800;
+          color: #000;
+          text-align: center;
+          margin-bottom: 30px;
+          line-height: 1.2;
+        }
+        .fun-actions {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 20px;
+        }
+        .cta-fun-btn {
+          background: #FF006E; /* Electric Pink */
+          color: white;
+          border: 4px solid #000;
+          padding: 18px 40px;
+          font-weight: 900;
+          font-size: 1.4rem;
+          text-transform: uppercase;
+          cursor: pointer;
+          border-radius: 20px;
+          box-shadow: 6px 6px 0px #000;
+          transition: all 0.2s;
+          width: 100%;
+        }
+        .cta-fun-btn:hover {
+          transform: translate(-3px, -3px);
+          box-shadow: 10px 10px 0px #000;
+          background: #fb2c8d;
+        }
+        .disclaimer-fun-tag {
+          background: white;
+          border: 2px solid #000;
+          padding: 5px 15px;
+          transform: rotate(-2deg);
+          box-shadow: 3px 3px 0px #000;
+        }
+        .disclaimer-fun-tag span {
+          font-size: 0.8rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: #000;
+        }
+        .promo-close-fun {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background: white;
+          border: 3px solid #000;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .promo-close-fun:hover {
+          background: #000;
+          color: white;
+          transform: rotate(90deg);
+        }
+
+        @keyframes popUpIn {
+          0% { transform: scale(0.6) rotate(-5deg); opacity: 0; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @media (min-width: 768px) {
+          .promo-layout-split {
+            flex-direction: row;
+            text-align: left;
+            gap: 50px;
+          }
+          .title-fun, .subtitle-fun { text-align: left; }
+          .fun-actions { align-items: flex-start; }
+          .title-fun { font-size: 3.5rem; }
+          .promo-image-container { max-width: 350px; }
+        }
+        
+        @media (max-width: 600px) {
+          .title-fun { font-size: 2.22rem; }
+          .sticker-item { display: none; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
 const Home = () => {
   const { t } = useLanguage();
   return (
     <>
+      <PromoPopup />
       <Hero />
       <ProductGallery />
       <section className="cta-section">

@@ -522,115 +522,220 @@ const OrderManager = () => {
 
     return (
         <div className="admin-section">
-            <h3>Gestión de Pedidos</h3>
+            <div className="admin-header-row">
+                <h3>Gestión de Pedidos</h3>
+                <button onClick={loadOrders} className="btn-refresh">Actualizar</button>
+            </div>
             {loading ? <p>Cargando pedidos...</p> : (
                 <div className="orders-list">
-                    {orders.length === 0 ? <p>No hay pedidos pendientes.</p> : orders.map(order => (
-                        <div key={order.id} className="order-card">
+                    {orders.length === 0 ? <p>No hay pedidos registrados.</p> : orders.map(order => (
+                        <div key={order.id} className={`order-card status-${order.status}`}>
                             <div className="order-header">
-                                <div>
-                                    <strong>{order.customer.name}</strong>
-                                    <span className="order-contact">{order.customer.phone}</span>
-                                </div>
-                                <span className={`order-status ${order.status}`}>
-                                    {order.status === 'pending' ? 'Pendiente' : 'Completado'}
-                                </span>
-                            </div>
-                            <div className="order-address">
-                                <small>📍 {order.customer.address}</small>
-                            </div>
-                            <div className="order-items">
-                                {order.items.map((item, idx) => (
-                                    <div key={idx} className="order-item-row">
-                                        <span>{item.quantity}x {item.name}</span>
-                                        <span>${(item.price * item.quantity).toFixed(2)}</span>
+                                <div className="customer-info-main">
+                                    <div className="avatar-letter">
+                                        {(order.customer?.name || 'C').charAt(0).toUpperCase()}
                                     </div>
-                                ))}
+                                    <div>
+                                        <h4 className="customer-name">{order.customer?.name || 'Desconocido'}</h4>
+                                        <p className="customer-meta">{order.customer?.email} | {order.customer?.phone}</p>
+                                    </div>
+                                </div>
+                                <div className="order-badge-group">
+                                    <span className={`status-badge ${order.status}`}>
+                                        {order.status === 'paid' ? '💰 Pagado' :
+                                            order.status === 'pending' ? '⏳ Pendiente' :
+                                                order.status === 'completed' ? '✅ Entregado' : order.status}
+                                    </span>
+                                </div>
                             </div>
+
+                            <div className="order-body-grid">
+                                <div className="order-details-col">
+                                    <h5 className="section-small-title">Dirección de Envío</h5>
+                                    <p className="address-text">
+                                        {order.customer?.address}<br />
+                                        {order.customer?.city}, {order.customer?.zip}
+                                    </p>
+
+                                    <h5 className="section-small-title">Método de Envío</h5>
+                                    <p className="shipping-method-info">
+                                        <Truck size={14} style={{ marginRight: '5px' }} />
+                                        {order.shipping?.name || 'Envío estándar'} - <strong>${(order.shipping?.price || 0).toFixed(2)}</strong>
+                                    </p>
+                                </div>
+
+                                <div className="order-items-col">
+                                    <h5 className="section-small-title">Productos</h5>
+                                    <div className="order-items-list">
+                                        {(order.items || []).map((item, idx) => (
+                                            <div key={idx} className="item-mini-row">
+                                                <span className="item-qty">{item.quantity}x</span>
+                                                <span className="item-name">{item.name}</span>
+                                                <span className="item-price">${((item.price || 0) * item.quantity).toFixed(2)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="order-total-bar">
+                                        <span>TOTAL PAGADO</span>
+                                        <strong>${(order.total || 0).toFixed(2)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="order-footer">
-                                <span className="order-total">Total: ${order.total.toFixed(2)}</span>
-                                <div className="order-actions">
-                                    {order.status === 'pending' && (
-                                        <button onClick={() => updateStatus(order.id, 'completed')} className="btn-sm btn-success">
-                                            Completar
+                                <span className="order-id-tag">REF: {order.paymentId || order.id.substring(0, 8)}</span>
+                                <div className="order-actions-buttons">
+                                    {order.status === 'paid' && (
+                                        <button onClick={() => updateStatus(order.id, 'completed')} className="btn-action b-complete">
+                                            Marcar como Enviado
                                         </button>
                                     )}
                                     <button onClick={async () => {
-                                        if (window.confirm('¿Eliminar pedido?')) {
+                                        if (window.confirm('¿Eliminar registro de pedido definitivamente?')) {
                                             await deleteDoc(doc(db, "orders", order.id));
                                             loadOrders();
                                         }
-                                    }} className="btn-sm btn-danger">
-                                        <Trash2 size={14} />
+                                    }} className="btn-action b-delete">
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             </div>
-                            <small className="order-date">{order.createdAt?.toDate().toLocaleString()}</small>
+                            <div className="order-date-row">
+                                {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString() : 'Fecha no disponible'}
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
             <style>{`
-                .order-card {
-                    background: #fafafa;
-                    border: 1px solid var(--border);
-                    border-radius: 8px;
-                    padding: 15px;
+                .admin-header-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
                     margin-bottom: 20px;
                 }
+                .btn-refresh {
+                    background: transparent;
+                    border: 1px solid var(--primary);
+                    color: var(--primary);
+                    padding: 5px 15px;
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                }
+                .order-card {
+                    background: #fff;
+                    border: 1px solid var(--border);
+                    border-radius: 16px;
+                    padding: 20px;
+                    margin-bottom: 25px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+                    transition: transform 0.2s;
+                }
+                .order-card:hover { transform: translateY(-2px); }
+                
                 .order-header {
                     display: flex;
                     justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 10px;
-                }
-                .order-contact {
-                    display: block;
-                    font-size: 0.9rem;
-                    color: var(--muted-text);
-                }
-                .order-status {
-                    display: inline-flex;
                     align-items: center;
-                    gap: 5px;
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    font-size: 0.8rem;
+                    margin-bottom: 20px;
+                    padding-bottom: 15px;
+                    border-bottom: 1px solid #f1f5f9;
+                }
+                .customer-info-main { display: flex; align-items: center; gap: 12px; }
+                .avatar-letter {
+                    width: 45px; height: 45px;
+                    background: #f0f9ff;
+                    color: var(--primary);
+                    display: flex; align-items: center; justify-content: center;
+                    border-radius: 12px; font-weight: 900; font-size: 1.2rem;
+                    border: 1px solid #e0f2fe;
+                }
+                .customer-name { margin: 0; font-size: 1.1rem; color: #1e293b; }
+                .customer-meta { margin: 0; font-size: 0.85rem; color: #64748b; }
+
+                .status-badge {
+                    padding: 6px 12px;
+                    border-radius: 99px;
+                    font-size: 0.75rem;
+                    font-weight: 800;
                     text-transform: uppercase;
-                    font-weight: bold;
                 }
-                .order-status.pending { background: #fff7ed; color: #c2410c; }
-                .order-status.completed { background: #f0fdf4; color: #15803d; }
-                
-                .order-address { margin-bottom: 15px; color: var(--secondary); font-size: 0.9rem; }
-                
-                .order-items {
-                    border-top: 1px solid #e5e7eb;
-                    border-bottom: 1px solid #e5e7eb;
-                    padding: 10px 0;
+                .status-badge.paid { background: #dcfce7; color: #166534; }
+                .status-badge.completed { background: #f1f5f9; color: #475569; }
+                .status-badge.pending { background: #fef9c3; color: #854d0e; }
+
+                .order-body-grid {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 20px;
+                    margin-bottom: 20px;
+                }
+                @media (min-width: 600px) {
+                    .order-body-grid { grid-template-columns: 1fr 1fr; }
+                }
+
+                .section-small-title {
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    color: #94a3b8;
+                    letter-spacing: 0.05em;
+                    margin-bottom: 8px;
+                    font-weight: 800;
+                }
+                .address-text { font-size: 0.9rem; line-height: 1.4; color: #334155; margin-bottom: 15px; }
+                .shipping-method-info {
+                    display: flex; align-items: center;
+                    font-size: 0.9rem; background: #f8fafc;
+                    padding: 8px 12px; border-radius: 8px; color: #475569;
+                }
+
+                .order-items-list {
+                    background: #f8fafc;
+                    padding: 12px;
+                    border-radius: 8px;
                     margin-bottom: 10px;
                 }
-                .order-item-row {
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 0.9rem;
-                    margin-bottom: 5px;
+                .item-mini-row {
+                    display: flex; justify-content: space-between;
+                    font-size: 0.85rem; margin-bottom: 6px;
+                    padding-bottom: 6px; border-bottom: 1px solid #f1f5f9;
                 }
-                
+                .item-mini-row:last-child { border: none; margin: 0; padding: 0; }
+                .item-qty { font-weight: 800; color: var(--primary); width: 25px; }
+                .item-name { flex: 1; color: #334155; }
+                .item-price { font-weight: 600; color: #1e293b; }
+
+                .order-total-bar {
+                    display: flex; justify-content: space-between;
+                    align-items: center; padding: 10px 0;
+                }
+                .order-total-bar span { font-size: 0.8rem; font-weight: 800; color: #64748b; }
+                .order-total-bar strong { font-size: 1.2rem; color: #000; }
+
                 .order-footer {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-top: 10px;
+                    display: flex; justify-content: space-between;
+                    align-items: center; padding-top: 15px;
+                    border-top: 1px solid #f1f5f9;
                 }
-                .order-total { font-weight: bold; font-size: 1.1rem; color: var(--primary); }
+                .order-id-tag { font-family: monospace; font-size: 0.7rem; color: #94a3b8; }
+                .order-actions-buttons { display: flex; gap: 10px; }
                 
-                .order-actions { display: flex; gap: 10px; }
-                .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; border: none; cursor: pointer; color: white; display: flex; align-items: center; gap: 5px;}
-                .btn-success { background: #22c55e; }
-                .btn-danger { background: #ef4444; }
-                
-                .order-date { display: block; margin-top: 10px; font-size: 0.8rem; color: #94a3b8; text-align: right; }
+                .btn-action {
+                    padding: 8px 16px; border-radius: 8px;
+                    border: none; cursor: pointer; font-weight: 700;
+                    font-size: 0.85rem; transition: all 0.2s;
+                }
+                .b-complete { background: #000; color: #fff; }
+                .b-complete:hover { background: #334155; }
+                .b-delete { background: #fee2e2; color: #ef4444; }
+                .b-delete:hover { background: #fca5a5; }
+
+                .order-date-row {
+                    margin-top: 15px; font-size: 0.75rem;
+                    color: #cbd5e1; text-align: center;
+                }
             `}</style>
         </div>
     );
